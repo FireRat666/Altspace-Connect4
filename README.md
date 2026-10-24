@@ -1,33 +1,21 @@
-# Banter Connect 4
+# Connect 4
 
-A fully synced, multiplayer Connect 4 game that can be effortlessly embedded into any [Banter](https://bantervr.com) space.
+A synced multiplayer upright Connect 4 board. Made for **SideQuest / AltspaceVR** worlds, and it also works in **Banter**.
+
+There is no server: players stay in sync through the space's shared state, and the game is plain static files served from <https://connect4.firer.at>.
+
+To try it, open <https://connect4.firer.at> in Altspace or Banter.
 
 ## Features
 
-*   **Multiplayer Syncing**:  Game state is synchronized in real-time between all players in the space.
-*   **Plug & Play**: Embed with a single line of HTML.
-*   **Customizable**: Configure position, rotation, and scale via URL parameters.
-*   **No External Assets**: The board and pieces are procedurally generated using Banter's geometry system.
+- Win detection in every direction
+- Reset button
+- Several independent boards in one world
+- Built-in pieces or GLB models
 
-## How to Embed
+## Add it to an Altspace world (snippet)
 
-Add the following script tag to your space's `index.html` (or wherever you inject Banter scripts):
-
-**HTML Script Attributes (Recommended):**
-```html
-<script src="https://banter-connect4.firer.at/Connect4.js" instance="game1" boardPosition="0 1.5 5"></script>
-```
-
-**Legacy URL Query Parameters:**
-```html
-<script src="https://banter-connect4.firer.at/Connect4.js?instance=game1&boardPosition=0+1.5+5"></script>
-```
-
-*Replace the `src` URL with the actual path to where you are hosting `Connect4.js`.*
-
-## SideQuest / Altspace Creator SDK (Snippet)
-
-In a SideQuest/Altspace Creator SDK world, add an empty GameObject at the origin, click **Add Component > BS > Snippet** and type `connect4`. Or paste it into `Assets/WebRoot/index.html` between the snippet section comments:
+In a Creator SDK world, add an empty GameObject at the origin, click **Add Component > BS > Snippet** and type `connect4`. Or paste this into `Assets/WebRoot/index.html`, between the snippet section comments:
 
 ```html
 <!-- snippet section -->
@@ -50,49 +38,60 @@ In a SideQuest/Altspace Creator SDK world, add an empty GameObject at the origin
 <!-- end snippet section -->
 ```
 
-- Settings are the same as the script attributes above. `position` and `rotation` are Unity world values, and `scale` can be a single number.
 - Each placement is its own game. Its sync id is `room`, or the placement's own id when `room` is empty. Give placements the same `room` to share one game.
-- An empty setting uses the game's default.
+- `position` and `rotation` are Unity world values, and `scale` can be a single number. The other settings are listed under [Settings](#settings). An empty setting uses the default.
 - The Scene-view gizmo shows the board at its default size; it does not follow `scale`.
 - Unity reads the snippet section as XML: quote every attribute, close every element, and write `&` as `&amp;`.
 
-## Configuration Parameters
+## Add it with a script tag
 
-You can configure the game instance using **HTML script attributes** (recommended) or legacy **URL query parameters** (for backwards compatibility):
-
-| Parameter / Attribute | Description | Default | Example (Attribute) |
-| :--- | :--- | :--- | :--- |
-| `instance` | **Required** for multiple games. A unique identifier for this game instance to sync correctly. | `[url_path]` | `instance="lobby_game"` |
-| `boardPosition` / `position` / `board-position` | The position of the board in the space (x y z). | `0 1.1 0` | `boardPosition="5 0 10"` |
-| `boardRotation` / `rotation` / `board-rotation` | The rotation of the board in Euler degrees (x y z). | `0 0 0` | `boardRotation="0 180 0"` |
-| `boardScale` / `scale` / `board-scale` | The scale of the board (x y z). | `1 1 1` | `boardScale="2 2 2"` |
-| `resetPosition` / `reset-position` | Position of the reset button relative to the board. | `0 -0.4 0` | `resetPosition="0 -0.5 0"` |
-| `resetRotation` / `reset-rotation` | Rotation of the reset button relative to the board. | `0 0 0` | `resetRotation="180 0 0"` |
-| `resetScale` / `reset-scale` | Scale of the reset button. | `1 1 1` | `resetScale="0.5 0.5 0.5"` |
-| `hideUI` / `hide-ui` | If `true`, hides the restart/reset button. | `false` | `hideUI="true"` |
-| `hideBoard` / `hide-board` | If `true`, hides the game board frame. | `false` | `hideBoard="true"` |
-| `useCustomModels` / `use-custom-models` | If `true`, uses custom GLB models for the pieces instead of the default spheres. Requires `Models/DiscRed.glb` and `Models/DiscBlue.glb` to be present. | `false` | `useCustomModels="true"` |
-| `lighting` | If `lit` and using custom models, applies a `Standard` material to the pieces so they react to scene lights. | `unlit` | `lighting="lit"` |
-| `addLights` / `add-lights` | If `true` and using lit custom models, adds a default directional light to the scene. | `true` | `addLights="false"` |
-
-### Example with all parameters (using Attributes)
+This works in an Altspace world's `Assets/WebRoot/index.html` (outside the snippet section) and in a Banter space's HTML:
 
 ```html
-<script src="https://banter-connect4.firer.at/Connect4.js" instance="lounge_c4" boardPosition="10 0.5 -3" boardRotation="0 90 0" boardScale="1.5 1.5 1.5" useCustomModels="true" lighting="lit"></script>
+<script src="https://connect4.firer.at/Connect4.js" position="0 1.5 5"></script>
 ```
 
-## Game Rules
+For more than one board in a space, give each one its own `instance`:
 
-1.  **Objective**: Connect 4 pieces of your color (Red or Yellow) vertically, horizontally, or diagonally.
-2.  **Gameplay**:
-    *   Click on any column to drop your piece into the lowest available slot.
-    *   Turn passes to the other player automatically.
-    *   The game prevents moves if the column is full or the game is over.
-3.  **Reset**: Click the reset button (if visible) to clear the board and start a new game. This syncs for everyone.
+```html
+<script src="https://connect4.firer.at/Connect4.js" instance="board1" position="-2 1.1 -2"></script>
+<script src="https://connect4.firer.at/Connect4.js" instance="board2" position="2 1.1 -2"></script>
+```
 
-## Development
+Settings can also go in the URL, as in older setups: `https://connect4.firer.at/Connect4.js?boardPosition=0+1.1+-2&boardScale=0.8`.
 
-The game logic is contained within `Connect4.js`.
-*   **Logic**: A `Connect4Game` class handles the board state and win conditions.
-*   **Rendering**: Uses `BS.GameObject` and `BS.BanterGeometry` to draw the blue rack and pieces.
-*   **Syncing**: Uses `BS.spaceState` to share the board configuration.
+## Settings
+
+| Setting | Also accepted | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `instance` |  | page URL | Sync id. Boards with the same id share one game. In a snippet, use `room` instead. |
+| `boardPosition` | `position`, `board-position` | `0 1.1 0` | Board position (x y z). |
+| `boardRotation` | `rotation`, `board-rotation` | `0 0 0` | Board rotation in degrees (x y z). |
+| `boardScale` | `scale`, `board-scale` | `1` | Board scale: one number, or x y z. |
+| `resetPosition` | `reset-position` | `0 -0.4 0` | Reset button position, relative to the board. |
+| `resetRotation` | `reset-rotation` | `0 0 0` | Reset button rotation, relative to the board. |
+| `resetScale` | `reset-scale` | `1` | Reset button scale. |
+| `hideUI` | `hide-ui` | `false` | `true` hides the buttons. |
+| `hideBoard` | `hide-board` | `false` | `true` hides the board, e.g. to use your own. |
+| `useCustomModels` | `use-custom-models` | `false` | `true` uses the GLB models in `Models/` for the pieces instead of built-in shapes. |
+| `lighting` |  | `unlit` | `lit` uses materials that react to scene lights. |
+| `addLights` | `add-lights` | `true` | With `lighting="lit"`, adds a directional light. Set `false` if the world has its own. |
+
+Settings can be written as `boardPosition` or `board-position`; the snippet uses the hyphenated form.
+
+## How to play
+
+1. Connect four of your colour (red or yellow) in a row: across, up or diagonally.
+2. Click a column to drop a piece into it.
+3. Reset clears the board for everyone.
+
+## Files
+
+- `Connect4.js`: the game.
+- `Models/`: piece models for `use-custom-models`.
+- `snippet.js`, `snippet.html`: the Creator SDK snippet and its definition.
+- `index.html`: a test page with a floor and the game.
+
+## License
+
+GPL-3.0. See [LICENSE](LICENSE).
