@@ -632,7 +632,7 @@
                             if (isWinCell) {
                                 pieceColor = COLORS.winHighlight;
                             }
-                            const mat = slot.sphere.GetComponent(BS.ComponentType.BanterMaterial);
+                            const mat = slot.sphere.GetComponent((BS.ComponentType.Material ?? BS.ComponentType.BanterMaterial));
                             if (mat) mat.color = hexToVector4(pieceColor);
                         }
                     }

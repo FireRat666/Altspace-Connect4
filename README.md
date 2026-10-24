@@ -25,6 +25,37 @@ Add the following script tag to your space's `index.html` (or wherever you injec
 
 *Replace the `src` URL with the actual path to where you are hosting `Connect4.js`.*
 
+## SideQuest / Altspace Creator SDK (Snippet)
+
+In a SideQuest/Altspace Creator SDK world, add an empty GameObject at the origin, click **Add Component > BS > Snippet** and type `connect4`. Or paste it into `Assets/WebRoot/index.html` between the snippet section comments:
+
+```html
+<!-- snippet section -->
+<bs-snippet name="connect4" title="Connect 4"
+  description="Synced multiplayer upright Connect 4 board with a reset button."
+  script="https://connect4.firer.at/snippet.js"
+  room=""
+  position="0 1.2 2"
+  rotation="0 0 0"
+  scale="1"
+  lighting="unlit"
+  add-lights="true"
+  hide-ui="false"
+  hide-board="false"
+  use-custom-models="false"
+  reset-position="0 -0.4 0">
+  <bs-gizmo type="position" attribute="position"/>
+  <bs-gizmo type="plane" attribute="position" size="0.72 0.62"/>
+</bs-snippet>
+<!-- end snippet section -->
+```
+
+- Settings are the same as the script attributes above. `position` and `rotation` are Unity world values, and `scale` can be a single number.
+- Each placement is its own game. Its sync id is `room`, or the placement's own id when `room` is empty. Give placements the same `room` to share one game.
+- An empty setting uses the game's default.
+- The Scene-view gizmo shows the board at its default size; it does not follow `scale`.
+- Unity reads the snippet section as XML: quote every attribute, close every element, and write `&` as `&amp;`.
+
 ## Configuration Parameters
 
 You can configure the game instance using **HTML script attributes** (recommended) or legacy **URL query parameters** (for backwards compatibility):
