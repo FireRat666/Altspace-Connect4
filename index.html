@@ -75,6 +75,7 @@
         <div class="code-header">Script tag</div>
         <pre><code>&lt;script src=&quot;https://connect4.firer.at/Connect4.js&quot; position=&quot;0 1.5 5&quot;&gt;&lt;/script&gt;</code></pre>
         <p>All the settings are listed on <a href="https://github.com/FireRat666/Banter-Connect4#settings" target="_blank">GitHub</a>.</p>
+        <p>A position of <code>0 0 0</code> means automatic: the turn sign sits in its default spot next to the board. Any other value places it relative to the board.</p>
       </section>
 
       <section class="info-block">
@@ -109,7 +110,23 @@
 <!-- WEB PAGE END -->
     <a-scene></a-scene>
     <script>
+        // A big sphere round the space with a sky picture on its inside.
+        // Called from createFloor, so it is made once, at the same time as the floor.
+        async function createSky() {
+            const sky = await new BS.GameObject({ name: "BanterSky" }).Async();
+            await sky.AddComponent(new BS.BanterSphere({ radius: 300 }));
+            await sky.AddComponent(new BS.BanterInvertedMesh()); // Faces inwards, so it shows from inside
+            await sky.AddComponent(new BS.BanterMaterial({
+                shaderName: "Unlit/Diffuse",
+                texture: "https://drop.firer.at/Assets/skybox-4k-zc.jpg",
+                color: new BS.Vector4(1, 1, 1, 1),
+                side: BS.MaterialSide.Front
+            }));
+            await sky.AddComponent(new BS.Transform());
+        }
+
         async function createFloor() {
+            createSky();
             const floor = await new BS.GameObject("BanterFloor").Async();
             const width = 30; const height = 0.1; const depth = 30;
 
@@ -146,9 +163,12 @@
       hide-ui="false"
       hide-board="false"
       use-custom-models="true"
-      reset-position="0 -0.4 0"
+      reset-position="0 -0.06 0"
       reset-rotation="0 0 0"
-      reset-scale="1">
+      reset-scale="1"
+      scoreboard-position="0 0 0"
+      scoreboard-rotation="0 0 0"
+      scoreboard-scale="1">
       <bs-gizmo type="position" attribute="position"/>
       <bs-gizmo type="plane" attribute="position" size="0.72 0.62"/>
     </bs-snippet>

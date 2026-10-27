@@ -11,7 +11,7 @@
         boardPosition: [0, 1.1, 0],
         boardRotation: [0, 0, 0],
         boardScale: [1, 1, 1],
-        resetPosition: [0, -0.4, 0], // Default below board
+        resetPosition: [0, -0.06, 0], // Default just below the board
         resetRotation: [0, 0, 0],
         resetScale: [1, 1, 1],
         instance: window.location.href.split('?')[0],
@@ -141,6 +141,8 @@
         config.resetPosition = parseVector3(getParam('resetPosition'), config.resetPosition);
         config.resetRotation = parseVector3(getParam('resetRotation'), config.resetRotation);
         config.scoreboardPosition = parseVector3(getParam('scoreboardPosition'), null);
+        // 0 0 0 means automatic (the turn sign's default spot)
+        if (config.scoreboardPosition && config.scoreboardPosition.every(n => n === 0)) config.scoreboardPosition = null;
         config.scoreboardRotation = parseVector3(getParam('scoreboardRotation'), null);
         config.scoreboardScale = parseVector3(getParam('scoreboardScale'), null);
     }
@@ -161,9 +163,9 @@
         config.resetScale = new BS.Vector3(...config.resetScale);
 
         const COLORS = {
-            board: '#0055AA',    // Classic Blue Board
+            board: '#1E5BC6',    // Classic Blue Board
             red: '#D50000',      // Red Piece
-            yellow: '#ffff00ff',   // yellow Piece
+            yellow: '#FFD400',    // Yellow Piece
             empty: '#FFFFFF',    // Empty slot (transparent-ish visual)
             winHighlight: '#00FF00', // Green highlight for winning pieces
             hover: '#4488FF'     // Column hover effect
@@ -348,6 +350,12 @@
             return new BS.Vector4(((num >> 16) & 255) / 255, ((num >> 8) & 255) / 255, (num & 255) / 255, 1);
         }
 
+        // The same colour, darker by `factor` (0 to 1)
+        function darker(hex, factor) {
+            const v = hexToVector4(hex);
+            return new BS.Vector4(v.x * factor, v.y * factor, v.z * factor, 1);
+        }
+
         // Puts a text label on a button's face (same approach as Go's buttons). `w` and `h` are the
         // face size in metres; text is sized to fit it. `pos`/`rot` place the label on that face.
         async function addButtonLabel(btn, text, w, h, pos, rot) {
@@ -394,21 +402,35 @@
                 await frameRoot.AddComponent(new BS.Transform());
                 const frameDepth = 0.03;
     
+                // The outside edge is thicker and deeper than the bars between the slots
+                const edgeWidth = 0.04;
+                const edgeDepth = 0.05;
                 for (let i = 0; i <= cols; i++) {
+                    const isEdge = i === 0 || i === cols;
                     const barX = (startX - (gapX / 2)) + (i * gapX);
                     const centerY = startY + ((rows - 1) * gapY) / 2;
                     await createBanterObject(frameRoot, BS.GeometryType.BoxGeometry,
-                        { width: barWidth, height: gridHeight, depth: frameDepth },
+                        { width: isEdge ? edgeWidth : barWidth, height: gridHeight + (isEdge ? edgeWidth - barWidth : 0), depth: isEdge ? edgeDepth : frameDepth },
                         COLORS.board, new BS.Vector3(barX, centerY, 0));
                 }
     
                 const gridWidth = (cols * gapX) + barWidth;
                 const centerX = startX + ((cols - 1) * gapX) / 2;
                 for (let i = 0; i <= rows; i++) {
+                    const isEdge = i === 0 || i === rows;
                     const barY = (startY - (gapY / 2)) + (i * gapY);
                     await createBanterObject(frameRoot, BS.GeometryType.BoxGeometry,
-                        { width: gridWidth, height: barWidth, depth: frameDepth },
+                        { width: gridWidth, height: isEdge ? edgeWidth : barWidth, depth: isEdge ? edgeDepth : frameDepth },
                         COLORS.board, new BS.Vector3(centerX, barY, 0));
+                }
+
+                // Two feet under the bottom corners, like the classic stand
+                const bottomY = startY - (gapY / 2) - edgeWidth / 2;
+                for (const side of [-1, 1]) {
+                    const footX = centerX + side * (cols * gapX) / 2;
+                    await createBanterObject(frameRoot, BS.GeometryType.BoxGeometry,
+                        { width: 0.05, height: 0.03, depth: 0.24 },
+                        COLORS.board, new BS.Vector3(footX, bottomY - 0.015, 0));
                 }
             }
     
@@ -759,12 +781,14 @@
                          }
                     } else {
                         if (!slot.sphere) {
-                            const spherePiece = await createBanterObject(state.piecesRoot, BS.GeometryType.SphereGeometry,
-                                { radius: 0.045 }, COLORS.empty, slot.pos, false, 1.0, `sphere_${slot.r}_${slot.c}`);
-                            const pt = spherePiece.GetComponent(BS.ComponentType.Transform);
-                            pt.localScale = new BS.Vector3(1, 1, 0.25);
-                            await spherePiece.SetLayer(5);
-                            slot.sphere = spherePiece;
+                            // A flat round checker standing in the slot, with a darker raised ring in the middle
+                            const disc = await createBanterObject(state.piecesRoot, BS.GeometryType.CylinderGeometry,
+                                { radius: 0.044, height: 0.022 }, COLORS.empty, slot.pos, false, 1.0, `sphere_${slot.r}_${slot.c}`);
+                            disc.GetComponent(BS.ComponentType.Transform).localEulerAngles = new BS.Vector3(90, 0, 0);
+                            await disc.SetLayer(5);
+                            slot.sphereRing = await createBanterObject(disc, BS.GeometryType.CylinderGeometry,
+                                { radius: 0.03, height: 0.026 }, COLORS.empty, null, false, 1.0, `ring_${slot.r}_${slot.c}`);
+                            slot.sphere = disc;
                         }
     
                         if (slot.sphere) {
@@ -773,8 +797,11 @@
                             if (isWinCell) {
                                 pieceColor = COLORS.winHighlight;
                             }
-                            const mat = slot.sphere.GetComponent((BS.ComponentType.Material ?? BS.ComponentType.BanterMaterial));
+                            const matType = BS.ComponentType.Material ?? BS.ComponentType.BanterMaterial;
+                            const mat = slot.sphere.GetComponent(matType);
                             if (mat) mat.color = hexToVector4(pieceColor);
+                            const ringMat = slot.sphereRing && slot.sphereRing.GetComponent(matType);
+                            if (ringMat) ringMat.color = darker(pieceColor, 0.8);
                         }
                     }
                 }
