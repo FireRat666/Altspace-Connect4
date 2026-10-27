@@ -402,15 +402,19 @@
                 await frameRoot.AddComponent(new BS.Transform());
                 const frameDepth = 0.03;
     
-                // The outside edge is thicker and deeper than the bars between the slots
+                // The outside edge is thicker and deeper than the bars between the slots. It is
+                // pushed outwards by the extra thickness, so its inner face lines up with where a
+                // thin bar would be and the outer slots stay the same size as the rest.
                 const edgeWidth = 0.04;
                 const edgeDepth = 0.05;
+                const extra = edgeWidth - barWidth;
                 for (let i = 0; i <= cols; i++) {
                     const isEdge = i === 0 || i === cols;
-                    const barX = (startX - (gapX / 2)) + (i * gapX);
+                    const outward = isEdge ? (i === 0 ? -1 : 1) * extra / 2 : 0;
+                    const barX = (startX - (gapX / 2)) + (i * gapX) + outward;
                     const centerY = startY + ((rows - 1) * gapY) / 2;
                     await createBanterObject(frameRoot, BS.GeometryType.BoxGeometry,
-                        { width: isEdge ? edgeWidth : barWidth, height: gridHeight + (isEdge ? edgeWidth - barWidth : 0), depth: isEdge ? edgeDepth : frameDepth },
+                        { width: isEdge ? edgeWidth : barWidth, height: gridHeight + (isEdge ? extra * 2 : 0), depth: isEdge ? edgeDepth : frameDepth },
                         COLORS.board, new BS.Vector3(barX, centerY, 0));
                 }
     
@@ -418,16 +422,17 @@
                 const centerX = startX + ((cols - 1) * gapX) / 2;
                 for (let i = 0; i <= rows; i++) {
                     const isEdge = i === 0 || i === rows;
-                    const barY = (startY - (gapY / 2)) + (i * gapY);
+                    const outward = isEdge ? (i === 0 ? -1 : 1) * extra / 2 : 0;
+                    const barY = (startY - (gapY / 2)) + (i * gapY) + outward;
                     await createBanterObject(frameRoot, BS.GeometryType.BoxGeometry,
-                        { width: gridWidth, height: isEdge ? edgeWidth : barWidth, depth: isEdge ? edgeDepth : frameDepth },
+                        { width: gridWidth + (isEdge ? extra * 2 : 0), height: isEdge ? edgeWidth : barWidth, depth: isEdge ? edgeDepth : frameDepth },
                         COLORS.board, new BS.Vector3(centerX, barY, 0));
                 }
 
                 // Two feet under the bottom corners, like the classic stand
-                const bottomY = startY - (gapY / 2) - edgeWidth / 2;
+                const bottomY = startY - (gapY / 2) - barWidth / 2 - extra;
                 for (const side of [-1, 1]) {
-                    const footX = centerX + side * (cols * gapX) / 2;
+                    const footX = centerX + side * ((cols * gapX) / 2 + extra / 2);
                     await createBanterObject(frameRoot, BS.GeometryType.BoxGeometry,
                         { width: 0.05, height: 0.03, depth: 0.24 },
                         COLORS.board, new BS.Vector3(footX, bottomY - 0.015, 0));
