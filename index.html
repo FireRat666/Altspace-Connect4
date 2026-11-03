@@ -9,7 +9,7 @@
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#00ff44">
     <title>Connect 4 for AltspaceVR &amp; BanterVR | Embed 3D Multiplayer Connect 4 | FireR.at</title>
-    <meta name="description" content="Embed a synced 3D multiplayer upright Connect 4 board with win detection and a reset button into your AltspaceVR (altvr.app, the new Altspace) world or BanterVR space.">
+    <meta name="description" content="Embed a synced 3D multiplayer upright Connect 4 board with win detection and seat locking into your AltspaceVR (altvr.app, the new Altspace) world or BanterVR space.">
     <meta name="keywords" content="Altspace Connect 4, AltspaceVR Connect 4, Banter Connect 4, BanterVR Connect 4, altvr.app, the new Altspace, VR board games, Altspace snippet connect4, FireRat">
     <meta name="author" content="FireRat">
     <meta name="robots" content="index, follow">
@@ -35,7 +35,7 @@
       "gamePlatform": ["AltspaceVR", "BanterVR"],
       "applicationCategory": "GameApplication",
       "playMode": "MultiPlayer",
-      "description": "Serverless synced 3D multiplayer upright Connect 4 board with automatic win detection and reset button for AltspaceVR (altvr.app) and BanterVR spaces.",
+      "description": "Serverless synced 3D multiplayer upright Connect 4 board with automatic win detection and seat locking for AltspaceVR (altvr.app) and BanterVR spaces.",
       "author": { "@type": "Person", "name": "FireRat", "url": "https://firer.at/" },
       "isPartOf": { "@type": "WebPage", "url": "https://firer.at/games.html" }
     }
@@ -99,12 +99,12 @@
         <div class="code-header">Script tag</div>
         <pre><code>&lt;script src=&quot;https://connect4.firer.at/Connect4.js&quot; position=&quot;0 1.5 5&quot;&gt;&lt;/script&gt;</code></pre>
         <p>All the settings are listed on <a href="https://github.com/FireRat666/Banter-Connect4#settings" target="_blank">GitHub</a>.</p>
-        <p>A position of <code>0 0 0</code> means automatic: the turn sign sits in its default spot next to the board. Any other value places it relative to the board.</p>
+        <p>A position of <code>0 0 0</code> means automatic: the UI panel sits just above the board. Any other value places it relative to the board.</p>
       </section>
 
       <section class="info-block">
         <h2>Features</h2>
-        <ul><li>Win detection in every direction</li><li>Reset button</li><li>Several independent boards in one world</li><li>Built-in pieces or GLB models</li></ul>
+        <ul><li>Win detection in every direction</li><li>A turn panel with seats, Reset and Mute</li><li>Seat locking</li><li>Switches itself off when you are far away</li><li>Several independent boards in one world</li><li>Built-in pieces or GLB models</li></ul>
       </section>
 
       <section class="info-block">
@@ -114,7 +114,7 @@
     </main>
 
     <footer>
-      <p>Synced multiplayer upright Connect 4 board with a reset button. Open <a href="https://connect4.firer.at">connect4.firer.at</a> as a space in Altspace or Banter to try it.</p>
+      <p>Synced multiplayer upright Connect 4 board with seat locking. Open <a href="https://connect4.firer.at">connect4.firer.at</a> as a space in Altspace or Banter to try it.</p>
       <p>&copy; <span class="fire-year"></span> <a href="https://firer.at/">FireR.at</a></p>
     </footer>
   </div>
@@ -175,7 +175,7 @@
     -->
     <!-- snippet section -->
     <bs-snippet name="connect4" title="Connect 4"
-      description="Synced multiplayer upright Connect 4 board with a reset button."
+      description="Synced multiplayer upright Connect 4 board with seat locking."
       script="https://connect4.firer.at/snippet.js"
       room=""
       position="0 0.2 2"
@@ -184,18 +184,14 @@
       lit="true"
       add-lights="false"
       turn-cooldown="5"
+      lock-timeout="90"
+      cull-distance="20"
       sound-volume="0.4"
       sound-near="2.5"
       sound-far="10"
       hide-ui="false"
       hide-board="false"
       use-custom-models="true"
-      reset-position="-0.1 0 0.07"
-      reset-rotation="0 0 0"
-      reset-scale="1"
-      mute-position="0.1 0 0.07"
-      mute-rotation="0 0 0"
-      mute-scale="1"
       scoreboard-position="0 0 0"
       scoreboard-rotation="0 0 0"
       scoreboard-scale="1">
