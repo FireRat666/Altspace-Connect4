@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://connect4.firer.at/sitemap.xml
